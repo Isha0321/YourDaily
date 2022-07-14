@@ -5,13 +5,13 @@ export const palette = (mode: PaletteMode) => {
 		mode: mode,
 		custom: {},
 		primary: {
-			main: '#C2FAE5',
-			contrastText: '#171923',
+			main: '#F88A12',
+			contrastText: '#FFFFFF',
 			light: '#CEFBEA',
-			dark: '#87AFA0',
+			dark: 'rgb(249, 161, 65)',
 		},
 		secondary: {
-			main: '#718096',
+			main: '#666666',
 			contrastText: '#FFFFFF',
 			light: '#E2E8F0',
 			dark: '#4F5A6A',
