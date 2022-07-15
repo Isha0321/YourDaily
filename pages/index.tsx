@@ -1,4 +1,13 @@
-import { Box, Button, Typography, Grid, Paper, Stack, useMediaQuery, Theme } from '@mui/material'
+import {
+	Box,
+	Button,
+	Typography,
+	Grid,
+	Paper,
+	Stack,
+	useMediaQuery,
+	Theme,
+} from '@mui/material'
 import type { NextPage } from 'next'
 import * as React from 'react'
 import Image from 'next/image'
@@ -8,6 +17,7 @@ import IconButton from '@mui/material/IconButton'
 import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import { Person } from '@mui/icons-material'
+import axios from 'axios'
 
 const Home: NextPage = () => {
 	interface State {
@@ -33,7 +43,19 @@ const Home: NextPage = () => {
 			showPassword: !values.showPassword,
 		})
 	}
-	const isMobile = useMediaQuery((theme:Theme)=>theme.breakpoints.down('md'))
+
+	const handleOnLogin = async () => {
+		try {
+			const token = await axios.post('/api/sm-login', {
+				email: values.username,
+				password: values.password,
+			})
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	const isMobile = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
 
 	return (
 		<>
@@ -46,8 +68,15 @@ const Home: NextPage = () => {
 				/>
 			</Box>
 
-			<Stack direction={isMobile?'column':'row'} justifyContent='space-evenly' alignItems='center' spacing={2} >
-				<Stack  position='relative' height={isMobile?400:'100%'} width={isMobile?'100%':600}  >
+			<Stack
+				direction={isMobile ? 'column' : 'row'}
+				justifyContent='space-evenly'
+				alignItems='center'
+				spacing={2}>
+				<Stack
+					position='relative'
+					height={isMobile ? 400 : '100%'}
+					width={isMobile ? '100%' : 600}>
 					<Image
 						style={{ flex: 1 }}
 						src='/assets/image/ydd.png'
@@ -100,7 +129,8 @@ const Home: NextPage = () => {
 
 						<Button
 							variant='contained'
-							sx={{ opacity: '1', borderRadius: '5' }}>
+							sx={{ opacity: '1', borderRadius: '5' }}
+							onClick={handleOnLogin}>
 							<Typography sx={{ opacity: '1' }}>Login</Typography>
 						</Button>
 
