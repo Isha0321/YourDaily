@@ -27,7 +27,7 @@ const Home: NextPage = () => {
 		showPassword: boolean
 	}
 
-	const router = useRouter()
+	// const router = useRouter()
 	const { customizedSnackbar } = React.useContext(snackbarContext)
 
 	const [values, setValues] = React.useState<State>({
@@ -56,7 +56,7 @@ const Home: NextPage = () => {
 			})
 			if (status == 200) {
 				customizedSnackbar('Successfully Logged In!', 'success')
-				router.push('/dashboard')
+				// router.push('/dashboard')
 			}
 			console.log(data.Authorization)
 			localStorage.setItem('Auth', data.Authorization)
