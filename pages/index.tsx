@@ -2,7 +2,6 @@ import {
 	Box,
 	Button,
 	Typography,
-	Grid,
 	Paper,
 	Stack,
 	useMediaQuery,
@@ -18,6 +17,8 @@ import Visibility from '@mui/icons-material/Visibility'
 import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import { Person } from '@mui/icons-material'
 import axios from 'axios'
+import snackbarContext from '../shared/provider/snackprovider'
+import { useRouter } from 'next/router'
 
 const Home: NextPage = () => {
 	interface State {
@@ -25,6 +26,9 @@ const Home: NextPage = () => {
 		password: string
 		showPassword: boolean
 	}
+
+	const router = useRouter()
+	const { customizedSnackbar } = React.useContext(snackbarContext)
 
 	const [values, setValues] = React.useState<State>({
 		username: '',
@@ -46,12 +50,20 @@ const Home: NextPage = () => {
 
 	const handleOnLogin = async () => {
 		try {
-			const token = await axios.post('/api/sm-login', {
+			const { status, data } = await axios.post('/api/sm-login', {
 				email: values.username,
 				password: values.password,
 			})
-		} catch (error) {
+			if (status == 200) {
+				customizedSnackbar('Successfully Logged In!', 'success')
+				router.push('/dashboard')
+			}
+			console.log(data.Authorization)
+			localStorage.setItem('Auth', data.Authorization)
+		} catch (error: any) {
+			customizedSnackbar('Invalid UserName or Password!', 'error')
 			console.log(error)
+		} finally {
 		}
 	}
 

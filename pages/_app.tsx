@@ -3,6 +3,7 @@ import type { AppProps } from 'next/app'
 import '../css/fonts.css'
 import '../css/global.css'
 import { createCustomTheme } from '../shared'
+import { Snackbarr } from '../shared/provider/snackprovider'
 import axios from 'axios'
 
 axios.defaults.baseURL =
@@ -13,7 +14,9 @@ function MyApp({ Component, pageProps }: AppProps) {
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
-			<Component {...pageProps} />
+			<Snackbarr>
+				<Component {...pageProps} />
+			</Snackbarr>
 		</ThemeProvider>
 	)
 }
