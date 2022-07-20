@@ -16,6 +16,7 @@ import Tab from '@mui/material/Tab'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import Checkbox from '@mui/material/Checkbox'
+import { Router, useRouter } from 'next/router'
 // interface GetItemApiResponse{
 //     items:Item[]
 // }
@@ -29,6 +30,7 @@ interface Item {
 	baseQuantity: number
 }
 const Dashboard = () => {
+	const router = useRouter()
 	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [value, setValue] = useState(0)
 	const [items, setItems] = useState<Item[]>()
@@ -76,7 +78,10 @@ const Dashboard = () => {
 				justifyContent={'space-evenly'}
 				padding={3}
 				sx={{ alignItems: 'center' }}>
-				<Button sx={{ color: '#777777' }} variant='text'>
+				<Button
+					sx={{ color: '#777777' }}
+					variant='text'
+					onClick={() => router.push('/')}>
 					Back
 				</Button>
 				<Typography variant='h3'>Items</Typography>
