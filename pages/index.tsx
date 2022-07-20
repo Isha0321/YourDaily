@@ -19,6 +19,10 @@ import { Person } from '@mui/icons-material'
 import axios from 'axios'
 import snackbarContext from '../shared/provider/snackprovider'
 import { useRouter } from 'next/router'
+// interface PostLoginApiPayload {
+// 	email: string
+// 	password: string
+// }
 
 const Home: NextPage = () => {
 	interface State {
@@ -27,7 +31,7 @@ const Home: NextPage = () => {
 		showPassword: boolean
 	}
 
-	// const router = useRouter()
+	const router = useRouter()
 	const { customizedSnackbar } = React.useContext(snackbarContext)
 
 	const [values, setValues] = React.useState<State>({
@@ -56,7 +60,7 @@ const Home: NextPage = () => {
 			})
 			if (status == 200) {
 				customizedSnackbar('Successfully Logged In!', 'success')
-				// router.push('/dashboard')
+				router.push('/dashboard')
 			}
 			console.log(data.Authorization)
 			localStorage.setItem('Auth', data.Authorization)
