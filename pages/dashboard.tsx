@@ -1,5 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
-import { Box, Button, Grid, Toolbar, Typography } from '@mui/material'
+import {
+	Box,
+	Button,
+	Grid,
+	IconButton,
+	Paper,
+	Toolbar,
+	Typography,
+} from '@mui/material'
 import React from 'react'
 import AppBar from '@mui/material/AppBar'
 import Image from 'next/image'
@@ -17,6 +25,14 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import Checkbox from '@mui/material/Checkbox'
 import { Router, useRouter } from 'next/router'
+import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogContentText from '@mui/material/DialogContentText'
+import snackbarContext from '../shared/provider/snackprovider'
+
 // interface GetItemApiResponse{
 //     items:Item[]
 // }
@@ -31,10 +47,11 @@ interface Item {
 }
 const Dashboard = () => {
 	const router = useRouter()
+	const { customizedSnackbar } = React.useContext(snackbarContext)
+
 	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [value, setValue] = useState(0)
 	const [items, setItems] = useState<Item[]>()
-
 	const handleChange = (event: React.SyntheticEvent, newValue: number) => {
 		setValue(newValue)
 	}
@@ -56,6 +73,43 @@ const Dashboard = () => {
 		}
 	}, [])
 
+	const [open, setOpen] = React.useState(false)
+
+	const handleClickOpen = () => {
+		setOpen(true)
+	}
+
+	const handleClose = () => {
+		setOpen(false)
+	}
+
+	const handleLogout = () => {
+		router.push('/')
+		customizedSnackbar('Successfully logged out!', 'success')
+	}
+
+	const handleDelete = (id: number) => {
+		const Auth = localStorage.getItem('Auth') as string
+		try {
+			;(async () => {
+				const { status, data } = await axios.delete(
+					`/api/store-manager/item/${id}`,
+					{
+						headers: {
+							Authorization: Auth,
+						},
+					}
+				)
+				if (status == 200) {
+					customizedSnackbar('Deleted successfully!', 'success')
+					window.location.reload()
+				}
+			})()
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
 	return (
 		<>
 			<AppBar position='static'>
@@ -70,7 +124,25 @@ const Dashboard = () => {
 					</Box>
 					<Typography variant='h6'>Dashboard</Typography>
 					<PersonAddAltIcon sx={{ marginLeft: 118 }} />
-					<LogoutIcon sx={{ marginLeft: 'auto', marginRight: 6 }} />
+					<LogoutIcon
+						sx={{ marginLeft: 'auto', marginRight: 6 }}
+						onClick={handleClickOpen}
+					/>
+					<div>
+						<Dialog open={open} onClose={handleClose}>
+							<DialogContent>
+								<DialogContentText>
+									Do you want to logout from the session?
+								</DialogContentText>
+							</DialogContent>
+							<DialogActions>
+								<Button onClick={handleClose}>No</Button>
+								<Button onClick={handleLogout} autoFocus>
+									Yes
+								</Button>
+							</DialogActions>
+						</Dialog>
+					</div>
 				</Toolbar>
 			</AppBar>
 
@@ -94,9 +166,10 @@ const Dashboard = () => {
 				textColor='primary'
 				indicatorColor='primary'
 				centered>
-				<Tab value='one' label='Vegetables' />
-				<Tab value='two' label='Fruits' />
-				<Tab value='three' label='Others' />
+				<Tab value='all' label='All' />
+				<Tab value='vegetables' label='Vegetables' />
+				<Tab value='fruits' label='Fruits' />
+				<Tab value='others' label='Others' />
 			</Tabs>
 
 			<TableContainer sx={{ padding: 2, paddingLeft: 10, paddingRight: 10 }}>
@@ -124,6 +197,12 @@ const Dashboard = () => {
 							</TableCell>
 							<TableCell align='right'>
 								<Typography sx={{ color: '#777777' }}>In Stock</Typography>
+							</TableCell>
+							<TableCell align='right'>
+								<Typography sx={{ color: '#777777' }}>Delete</Typography>
+							</TableCell>
+							<TableCell align='right'>
+								<Typography sx={{ color: '#777777' }}>Edit</Typography>
 							</TableCell>
 						</TableRow>
 					</TableHead>
@@ -158,6 +237,18 @@ const Dashboard = () => {
 										}}
 										checked={row.inStock}
 									/>
+								</TableCell>
+								<TableCell align='right'>
+									<IconButton
+										color='primary'
+										onClick={() => handleDelete(row.id)}>
+										<DeleteIcon />
+									</IconButton>
+								</TableCell>
+								<TableCell align='right'>
+									<IconButton aria-label='edit' color='primary'>
+										<EditIcon />
+									</IconButton>
 								</TableCell>
 							</TableRow>
 						))}
