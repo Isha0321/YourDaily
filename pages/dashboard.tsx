@@ -45,16 +45,57 @@ interface Item {
 	itemImageLinks: string[]
 	baseQuantity: number
 }
+
+enum TabCategory {
+	ALL = 'all',
+	VEGETABLES = 'vegetables',
+	FRUITS = 'fruits',
+	OTHERS = 'others',
+}
+
 const Dashboard = () => {
 	const router = useRouter()
 	const { customizedSnackbar } = React.useContext(snackbarContext)
-
+	const [del, setDel] = useState(false)
 	// eslint-disable-next-line react-hooks/rules-of-hooks
-	const [value, setValue] = useState(0)
-	const [items, setItems] = useState<Item[]>()
-	const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+	// const [value, setValue] = useState(0)
+	const [value, setValue] = useState<TabCategory>(TabCategory.ALL)
+	const [open, setOpen] = React.useState(false)
+
+	// const [items, setItems] = useState<Item[]>()
+
+	const handleTabValueChange = (
+		event: React.SyntheticEvent,
+		newValue: TabCategory
+	) => {
 		setValue(newValue)
 	}
+
+	const [dashboard, setDashboard] = React.useState<{
+		[key in TabCategory]: Item[]
+	}>({
+		[TabCategory.ALL]: [],
+		[TabCategory.VEGETABLES]: [],
+		[TabCategory.FRUITS]: [],
+		[TabCategory.OTHERS]: [],
+	})
+
+	// useEffect(() => {
+	// 	const Auth = localStorage.getItem('Auth') as string
+	// 	try {
+	// 		;(async () => {
+	// 			const response = await axios.get('/api/store-manager/item', {
+	// 				headers: {
+	// 					Authorization: Auth,
+	// 				},
+	// 			})
+	// 			setItems(response.data)
+	// 			console.log(response.data)
+	// 		})()
+	// 	} catch (error) {
+	// 		console.log(error)
+	// 	}
+	// }, [])
 
 	useEffect(() => {
 		const Auth = localStorage.getItem('Auth') as string
@@ -65,15 +106,30 @@ const Dashboard = () => {
 						Authorization: Auth,
 					},
 				})
-				setItems(response.data)
-				console.log(response.data)
+
+				const all = response.data as Item[]
+				const vegetables = all.filter(
+					(item: { categoryID: number }) => item.categoryID === 1
+				)
+				const fruits = all.filter(
+					(item: { categoryID: number }) => item.categoryID === 2
+				)
+				const others = all.filter(
+					(item: { categoryID: number }) =>
+						item.categoryID !== 1 && item.categoryID !== 2
+				)
+
+				setDashboard({
+					[TabCategory.ALL]: all,
+					[TabCategory.VEGETABLES]: vegetables,
+					[TabCategory.FRUITS]: fruits,
+					[TabCategory.OTHERS]: others,
+				})
 			})()
-		} catch (error) {
+		} catch (error: any) {
 			console.log(error)
 		}
-	}, [])
-
-	const [open, setOpen] = React.useState(false)
+	}, [del])
 
 	const handleClickOpen = () => {
 		setOpen(true)
@@ -102,7 +158,8 @@ const Dashboard = () => {
 				)
 				if (status == 200) {
 					customizedSnackbar('Deleted successfully!', 'success')
-					window.location.reload()
+					// window.location.reload()
+					setDel(true)
 				}
 			})()
 		} catch (error) {
@@ -162,14 +219,26 @@ const Dashboard = () => {
 
 			<Tabs
 				value={value}
-				onChange={handleChange}
+				onChange={handleTabValueChange}
 				textColor='primary'
 				indicatorColor='primary'
 				centered>
-				<Tab value='all' label='All' />
-				<Tab value='vegetables' label='Vegetables' />
-				<Tab value='fruits' label='Fruits' />
-				<Tab value='others' label='Others' />
+				<Tab
+					value={TabCategory.ALL}
+					label={`All (${dashboard[TabCategory.ALL].length})`}
+				/>
+				<Tab
+					value={TabCategory.VEGETABLES}
+					label={`Vegetables (${dashboard[TabCategory.VEGETABLES].length})`}
+				/>
+				<Tab
+					value={TabCategory.FRUITS}
+					label={`Fruits (${dashboard[TabCategory.FRUITS].length})`}
+				/>
+				<Tab
+					value={TabCategory.OTHERS}
+					label={`Others (${dashboard[TabCategory.OTHERS].length})`}
+				/>
 			</Tabs>
 
 			<TableContainer sx={{ padding: 2, paddingLeft: 10, paddingRight: 10 }}>
@@ -207,7 +276,7 @@ const Dashboard = () => {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{items?.map((row) => (
+						{dashboard[value]?.map((row: any) => (
 							<TableRow
 								key={row.id}
 								sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
