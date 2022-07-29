@@ -32,6 +32,8 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogContentText from '@mui/material/DialogContentText'
 import snackbarContext from '../shared/provider/snackprovider'
+import TextField from '@mui/material/TextField'
+import DialogTitle from '@mui/material/DialogTitle'
 
 // interface GetItemApiResponse{
 //     items:Item[]
@@ -46,6 +48,16 @@ interface Item {
 	baseQuantity: number
 }
 
+interface EditItemButton {
+	category: number
+	name: string
+	price: number
+	inStock: true
+	baseQuantity: number
+	imageId: number
+	id: number
+}
+
 enum TabCategory {
 	ALL = 'all',
 	VEGETABLES = 'vegetables',
@@ -56,12 +68,34 @@ enum TabCategory {
 const Dashboard = () => {
 	const router = useRouter()
 	const { customizedSnackbar } = React.useContext(snackbarContext)
-	const [del, setDel] = useState(false)
+	const [itemEdit, setItemEdit] = useState(false)
+	const [del, setDel] = React.useState(false)
+	const [logout, setLogOutDialog] = React.useState(false)
+	const [addItem, setAddItem] = useState(true)
+
+	const [storeAddItem, setStoreAddItem] = useState({
+		category: 1,
+		name: 'random',
+		price: 500,
+		inStock: true,
+		baseQuantity: '1 Unit',
+		imageId: 52,
+	})
+	const [storeEditItem, setStoreEditItem] = useState({
+		category: 1,
+		name: 'random',
+		price: 500,
+		inStock: true,
+		baseQuantity: '1 Unit',
+		imageId: 52,
+		id: 1,
+	})
 	// eslint-disable-next-line react-hooks/rules-of-hooks
+	//initially used fir setting data in table as per tab values
 	// const [value, setValue] = useState(0)
 	const [value, setValue] = useState<TabCategory>(TabCategory.ALL)
-	const [open, setOpen] = React.useState(false)
 
+	//initially used fir tabs data filtering
 	// const [items, setItems] = useState<Item[]>()
 
 	const handleTabValueChange = (
@@ -129,22 +163,22 @@ const Dashboard = () => {
 		} catch (error: any) {
 			console.log(error)
 		}
-	}, [del])
+	}, [del, addItem, itemEdit])
 
+	//logout button
 	const handleClickOpen = () => {
-		setOpen(true)
+		setLogOutDialog(true)
 	}
-
 	const handleClose = () => {
-		setOpen(false)
+		setLogOutDialog(false)
 	}
-
 	const handleLogout = () => {
 		router.push('/')
 		customizedSnackbar('Successfully logged out!', 'success')
 	}
 
-	const handleDelete = (id: number) => {
+	//delete button functionality
+	const handleDeleteItem = (id: number) => {
 		const Auth = localStorage.getItem('Auth') as string
 		try {
 			;(async () => {
@@ -167,6 +201,143 @@ const Dashboard = () => {
 		}
 	}
 
+	//state defined for add new items button
+	const [newItem, setNewItem] = React.useState(false)
+
+	const handleAddOpen = () => {
+		setNewItem(true)
+	}
+
+	const handleAddClose = () => {
+		setNewItem(false)
+	}
+
+	//add item functionality
+	const handleAddItem = () => {
+		const Auth = localStorage.getItem('Auth') as string
+		try {
+			;(async () => {
+				const { status, data } = await axios.post(
+					`/api/store-manager/item`,
+					storeAddItem,
+					{
+						headers: {
+							Authorization: Auth,
+						},
+					}
+				)
+				if (status == 201) {
+					customizedSnackbar('Item Added successfully!', 'success')
+					setAddItem(!addItem)
+					setNewItem(false)
+				}
+			})()
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	//state defined for edit items
+	const [editItem, setEditItem] = React.useState(false)
+
+	const handleEditOpen = (id: number) => {
+		const Auth = localStorage.getItem('Auth') as string
+		try {
+			;(async () => {
+				const { status, data } = await axios.get(
+					`/api/store-manager/item/${id}`,
+					{
+						headers: {
+							Authorization: Auth,
+						},
+					}
+				)
+				if (status == 200) {
+					setStoreEditItem(data)
+					console.log(storeEditItem)
+					customizedSnackbar('Item details fetched successfully!', 'success')
+					setEditItem(true)
+				}
+			})()
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	const handleEditClose = () => {
+		setEditItem(false)
+	}
+
+	//edit item functionality
+	const handleEditItem = () => {
+		const Auth = localStorage.getItem('Auth') as string
+		const id = storeEditItem.id
+		const body = {
+			category: 1,
+			imageId: 0,
+			inStock: storeEditItem.inStock,
+			name: storeEditItem.name,
+			price: storeEditItem.price,
+			strikeThroughPrice: 11,
+		}
+		console.log(body)
+		try {
+			;(async () => {
+				const { status, data } = await axios.put(
+					`/api/store-manager/item/${id}`,
+					body,
+					{
+						headers: {
+							Authorization: Auth,
+						},
+					}
+				)
+				if (status == 201) {
+					customizedSnackbar('Item Edited successfully!', 'success')
+					setItemEdit(!itemEdit)
+					setEditItem(false)
+				}
+			})()
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
+	const handleCheckBoxClick = (row: any) => {
+		const Auth = localStorage.getItem('Auth') as string
+		const id = row.id
+		const body = {
+			category: row.categoryID,
+			imageId: 0,
+			inStock: !row.inStock,
+			name: row.name,
+			price: row.price,
+			strikeThroughPrice: 11,
+			baseQuantity: '1 Unit',
+		}
+		console.log(body)
+		try {
+			;(async () => {
+				const { status, data } = await axios.put(
+					`/api/store-manager/item/${id}`,
+					body,
+					{
+						headers: {
+							Authorization: Auth,
+						},
+					}
+				)
+				if (status == 201) {
+					customizedSnackbar('Checkbox Edited successfully!', 'success')
+					setItemEdit(!itemEdit)
+					setEditItem(false)
+				}
+			})()
+		} catch (error) {
+			console.log(error)
+		}
+	}
+
 	return (
 		<>
 			<AppBar position='static'>
@@ -179,14 +350,17 @@ const Dashboard = () => {
 							height='51px'
 						/>
 					</Box>
+
 					<Typography variant='h6'>Dashboard</Typography>
+
 					<PersonAddAltIcon sx={{ marginLeft: 118 }} />
+
 					<LogoutIcon
 						sx={{ marginLeft: 'auto', marginRight: 6 }}
 						onClick={handleClickOpen}
 					/>
 					<div>
-						<Dialog open={open} onClose={handleClose}>
+						<Dialog open={logout} onClose={handleClose}>
 							<DialogContent>
 								<DialogContentText>
 									Do you want to logout from the session?
@@ -204,7 +378,8 @@ const Dashboard = () => {
 			</AppBar>
 
 			<Grid
-				justifyContent={'space-evenly'}
+				justifyContent={'space-around'}
+				marginLeft={30}
 				padding={3}
 				sx={{ alignItems: 'center' }}>
 				<Button
@@ -213,8 +388,115 @@ const Dashboard = () => {
 					onClick={() => router.push('/')}>
 					Back
 				</Button>
+
 				<Typography variant='h3'>Items</Typography>
-				<Button variant='text'>+ADD NEW ITEMS</Button>
+
+				<Button variant='text' onClick={handleAddOpen}>
+					+ADD NEW ITEMS
+				</Button>
+				<div>
+					<Dialog open={newItem} onClose={handleAddClose}>
+						<DialogTitle>Add Item Details</DialogTitle>
+						<DialogContent>
+							<DialogContentText>
+								All details are mandatory to fill.
+							</DialogContentText>
+							<TextField
+								margin='dense'
+								variant='standard'
+								value={storeAddItem.category}
+								id='category'
+								label='Category'
+								type='text'
+								fullWidth
+								onChange={(event) =>
+									setStoreAddItem({
+										...storeAddItem,
+										[event.target.id]: event.target.value,
+									})
+								}
+							/>
+							<TextField
+								margin='dense'
+								variant='standard'
+								id='name'
+								value={storeAddItem.name}
+								label='Vegetables Name'
+								type='text'
+								fullWidth
+								onChange={(event) =>
+									setStoreAddItem({
+										...storeAddItem,
+										[event.target.id]: event.target.value,
+									})
+								}
+							/>
+							<TextField
+								margin='dense'
+								variant='standard'
+								id='price'
+								value={storeAddItem.price}
+								label='Price(per base Qty)'
+								type='text'
+								fullWidth
+								onChange={(event) =>
+									setStoreAddItem({
+										...storeAddItem,
+										[event.target.id]: event.target.value,
+									})
+								}
+							/>
+							<Typography
+								sx={{ marginLeft: 0, color: '#777777', marginTop: 1 }}>
+								In Stock*
+							</Typography>
+							<Checkbox
+								checked={storeAddItem.inStock}
+								id='inStock'
+								onChange={(event) =>
+									setStoreAddItem({
+										...storeAddItem,
+										[event.target.id]: event.target.checked,
+									})
+								}
+							/>
+							<TextField
+								margin='dense'
+								variant='standard'
+								id='baseQuantity'
+								value={storeAddItem.baseQuantity}
+								label='Base Qty.'
+								type='text'
+								onChange={(event) =>
+									setStoreAddItem({
+										...storeAddItem,
+										[event.target.id]: event.target.value,
+									})
+								}
+								fullWidth
+							/>
+							<TextField
+								margin='dense'
+								variant='standard'
+								id='imageId'
+								value={storeAddItem.imageId}
+								label='Image'
+								type='text'
+								fullWidth
+								onChange={(event) =>
+									setStoreAddItem({
+										...storeAddItem,
+										[event.target.id]: event.target.value,
+									})
+								}
+							/>
+						</DialogContent>
+						<DialogActions>
+							<Button onClick={handleAddClose}>Cancel</Button>
+							<Button onClick={handleAddItem}>Add</Button>
+						</DialogActions>
+					</Dialog>
+				</div>
 			</Grid>
 
 			<Tabs
@@ -304,18 +586,22 @@ const Dashboard = () => {
 												color: '#21F812',
 											},
 										}}
+										onClick={() => handleCheckBoxClick(row)}
 										checked={row.inStock}
 									/>
 								</TableCell>
 								<TableCell align='right'>
 									<IconButton
 										color='primary'
-										onClick={() => handleDelete(row.id)}>
+										onClick={() => handleDeleteItem(row.id)}>
 										<DeleteIcon />
 									</IconButton>
 								</TableCell>
 								<TableCell align='right'>
-									<IconButton aria-label='edit' color='primary'>
+									<IconButton
+										aria-label='edit'
+										color='primary'
+										onClick={() => handleEditOpen(row.id)}>
 										<EditIcon />
 									</IconButton>
 								</TableCell>
@@ -324,6 +610,111 @@ const Dashboard = () => {
 					</TableBody>
 				</Table>
 			</TableContainer>
+			<Dialog open={editItem} onClose={handleEditClose}>
+				<DialogTitle>Edit Item Details</DialogTitle>
+				<DialogContent>
+					<DialogContentText>
+						All details are mandatory to fill.
+					</DialogContentText>
+					<TextField
+						margin='dense'
+						variant='standard'
+						value={storeEditItem.category}
+						id='category'
+						label='Category'
+						type='text'
+						fullWidth
+						onChange={(event) =>
+							setStoreEditItem({
+								...storeEditItem,
+								[event.target.id]: event.target.value,
+							})
+						}
+					/>
+					<TextField
+						margin='dense'
+						variant='standard'
+						value={storeEditItem.name}
+						id='name'
+						label='Vegetables Name'
+						type='text'
+						fullWidth
+						onChange={(event) =>
+							setStoreEditItem({
+								...storeEditItem,
+								[event.target.id]: event.target.value,
+							})
+						}
+					/>
+					<TextField
+						margin='dense'
+						variant='standard'
+						id='price'
+						value={storeEditItem.price}
+						label='Price(per base Qty)'
+						type='text'
+						fullWidth
+						onChange={(event) =>
+							setStoreEditItem({
+								...storeEditItem,
+								[event.target.id]: event.target.value,
+							})
+						}
+					/>
+					<Typography
+						sx={{
+							marginLeft: 0,
+							color: '#777777',
+							marginTop: 1,
+						}}>
+						In Stock*
+					</Typography>
+					<Checkbox
+						checked={storeEditItem.inStock}
+						id='inStock'
+						onChange={(event) =>
+							setStoreEditItem({
+								...storeEditItem,
+								[event.target.id]: event.target.checked,
+							})
+						}
+					/>
+					<TextField
+						margin='dense'
+						variant='standard'
+						id='baseQuantity'
+						value={storeEditItem.baseQuantity}
+						label='Base Qty.'
+						type='text'
+						onChange={(event) =>
+							setStoreEditItem({
+								...storeEditItem,
+								[event.target.id]: event.target.value,
+							})
+						}
+						fullWidth
+					/>
+					<TextField
+						margin='dense'
+						variant='standard'
+						id='imageId'
+						value={storeEditItem.imageId}
+						label='Image'
+						type='text'
+						fullWidth
+						onChange={(event) =>
+							setStoreEditItem({
+								...storeEditItem,
+								[event.target.id]: event.target.value,
+							})
+						}
+					/>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={handleEditClose}>Cancel</Button>
+					<Button onClick={() => handleEditItem()}>Save Edit</Button>
+				</DialogActions>
+			</Dialog>
 		</>
 	)
 }
