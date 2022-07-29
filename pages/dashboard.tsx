@@ -4,7 +4,6 @@ import {
 	Button,
 	Grid,
 	IconButton,
-	Paper,
 	Toolbar,
 	Typography,
 } from '@mui/material'
@@ -38,6 +37,7 @@ import DialogTitle from '@mui/material/DialogTitle'
 // interface GetItemApiResponse{
 //     items:Item[]
 // }
+
 interface Item {
 	id: number
 	categoryID: number
@@ -68,10 +68,8 @@ enum TabCategory {
 const Dashboard = () => {
 	const router = useRouter()
 	const { customizedSnackbar } = React.useContext(snackbarContext)
-	const [itemEdit, setItemEdit] = useState(false)
-	const [del, setDel] = React.useState(false)
+	const [loader, setLoader] = useState(false)
 	const [logout, setLogOutDialog] = React.useState(false)
-	const [addItem, setAddItem] = useState(true)
 
 	const [storeAddItem, setStoreAddItem] = useState({
 		category: 1,
@@ -162,8 +160,9 @@ const Dashboard = () => {
 			})()
 		} catch (error: any) {
 			console.log(error)
+			customizedSnackbar('Try Again!', 'error')
 		}
-	}, [del, addItem, itemEdit])
+	}, [customizedSnackbar, loader])
 
 	//logout button
 	const handleClickOpen = () => {
@@ -193,11 +192,12 @@ const Dashboard = () => {
 				if (status == 200) {
 					customizedSnackbar('Deleted successfully!', 'success')
 					// window.location.reload()
-					setDel(true)
+					setLoader(!loader)
 				}
 			})()
 		} catch (error) {
 			console.log(error)
+			customizedSnackbar('Try Again!', 'error')
 		}
 	}
 
@@ -228,12 +228,13 @@ const Dashboard = () => {
 				)
 				if (status == 201) {
 					customizedSnackbar('Item Added successfully!', 'success')
-					setAddItem(!addItem)
+					setLoader(!loader)
 					setNewItem(false)
 				}
 			})()
 		} catch (error) {
 			console.log(error)
+			customizedSnackbar('Try Again!', 'error')
 		}
 	}
 
@@ -261,6 +262,7 @@ const Dashboard = () => {
 			})()
 		} catch (error) {
 			console.log(error)
+			customizedSnackbar('Try Again!', 'error')
 		}
 	}
 
@@ -273,12 +275,13 @@ const Dashboard = () => {
 		const Auth = localStorage.getItem('Auth') as string
 		const id = storeEditItem.id
 		const body = {
-			category: 1,
+			category: storeEditItem.category,
 			imageId: 0,
 			inStock: storeEditItem.inStock,
 			name: storeEditItem.name,
 			price: storeEditItem.price,
 			strikeThroughPrice: 11,
+			baseQuantity: storeEditItem.baseQuantity,
 		}
 		console.log(body)
 		try {
@@ -294,12 +297,13 @@ const Dashboard = () => {
 				)
 				if (status == 201) {
 					customizedSnackbar('Item Edited successfully!', 'success')
-					setItemEdit(!itemEdit)
+					setLoader(!loader)
 					setEditItem(false)
 				}
 			})()
 		} catch (error) {
 			console.log(error)
+			customizedSnackbar('Try Again!', 'error')
 		}
 	}
 
@@ -329,12 +333,13 @@ const Dashboard = () => {
 				)
 				if (status == 201) {
 					customizedSnackbar('Checkbox Edited successfully!', 'success')
-					setItemEdit(!itemEdit)
+					setLoader(!loader)
 					setEditItem(false)
 				}
 			})()
 		} catch (error) {
 			console.log(error)
+			customizedSnackbar('Try Again!', 'error')
 		}
 	}
 
@@ -627,7 +632,7 @@ const Dashboard = () => {
 						onChange={(event) =>
 							setStoreEditItem({
 								...storeEditItem,
-								[event.target.id]: event.target.value,
+								[event.target.id]: parseInt(event.target.value),
 							})
 						}
 					/>
@@ -657,7 +662,7 @@ const Dashboard = () => {
 						onChange={(event) =>
 							setStoreEditItem({
 								...storeEditItem,
-								[event.target.id]: event.target.value,
+								[event.target.id]: parseInt(event.target.value),
 							})
 						}
 					/>
@@ -705,7 +710,7 @@ const Dashboard = () => {
 						onChange={(event) =>
 							setStoreEditItem({
 								...storeEditItem,
-								[event.target.id]: event.target.value,
+								[event.target.id]: parseInt(event.target.value),
 							})
 						}
 					/>
